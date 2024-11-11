@@ -97,9 +97,6 @@ function SafeObject:addInteraction()
     })
 end
 
-
-
-
 function SafeObject:dataOpenSafe()
     local CurrentStashID = lib.callback.await("LGF_Safe.requestStashId", false, self.position)
     if not CurrentStashID then return end
@@ -231,10 +228,19 @@ CreateThread(function()
     initializeStash(true)
 end)
 
-RegisterNetEvent('LGF_Safe:ClearAllStashes', function()
-    print("pulire")
-    clearStashData()
+
+RegisterNetEvent('LGF_Safe:DeleteStash', function(stashId)
+    for i, safe in ipairs(AllSafes) do
+        if safe.stashID == stashId then
+            exports.LGF_Interaction:removeInteractionEntity(safe.netID)
+            local entity = NetworkGetEntityFromNetworkId(safe.netID)
+            if DoesEntityExist(entity) then DeleteEntity(entity) end
+            table.remove(AllSafes, i)
+            Shared.Notification("LGF_Stash", ("Safe with ID %s has been deleted."):format(stashId), "top-left", "info")
+            break
+        end
+    end
 end)
 
 
-exports("InitializeAllStash", initializeStash)
+exports("initializeAllStash", initializeStash)

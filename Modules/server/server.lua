@@ -49,7 +49,6 @@ function Server.requestStashID(vec4)
         for i = 1, #result do
             local row = result[i]
             local dbCoords = json.decode(row.coords)
-
             if Shared.matchCoords(receivedCoords, dbCoords) then
                 return row.stash_id
             end
@@ -123,7 +122,7 @@ function Server.deleteAllStashes(source)
         end)
     else
         print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(
-        Utility.Core:GetName(source)))
+            Utility.Core:GetName(source)))
     end
 end
 
@@ -142,7 +141,23 @@ local hookId = exports.ox_inventory:registerHook('swapItems', function(payload)
     return true
 end)
 
+
+
+
+function Server.deleteStashById(stashId)
+    local result = MySQL.query.await('SELECT * FROM lgf_stashData WHERE stash_id = ?', { stashId })
+    if result and result[1] then
+        MySQL.update('DELETE FROM lgf_stashData WHERE stash_id = ?', { stashId })
+        TriggerClientEvent('LGF_Safe:DeleteStash', -1, stashId)
+        print(("Safe stash ID %s deleted."):format(stashId))
+    else
+        print(("Stash ID %s not found."):format(stashId))
+    end
+end
+
 exports('deleteAllStashes', Server.deleteAllStashes)
 exports("updateStashCoords", Server.updateStashCoords)
 exports("getAllStashData", Server.getAllStashData)
 exports("isOwnerStash", Server.isOwnerStash)
+exports("requestStashID", Server.requestStashID)
+exports("deleteStashById", Server.deleteStashById)
