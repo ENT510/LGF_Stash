@@ -92,24 +92,16 @@ end
 
 function Server.updateStashCoords(stashId, newCoords)
     local src = source
-    if not stashId or not newCoords then
-        print("Invalid input parameters!")
-        return
-    end
+    if not stashId or not newCoords then  print("Invalid input parameters!") return end
     local coordsJson = json.encode({ x = newCoords.x, y = newCoords.y, z = newCoords.z, w = newCoords.w })
     MySQL.update('UPDATE lgf_stashData SET coords = ? WHERE stash_id = ?', { coordsJson, stashId })
     Shared.Debug(("Coordinates update requested for stash_id %s"):format(stashId))
-    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left",
-        "info", src)
+    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left", "info", src)
 end
 
 RegisterNetEvent('LGF_Safe:updateCoords', function(stashId, newCoords, invoker)
     local resourceInvoker = invoker
-    if resourceInvoker ~= GetCurrentResourceName() then
-        print(("Unauthorized event trigger attempt! Resource mismatch for stash update"))
-        return
-    end
-
+    if resourceInvoker ~= GetCurrentResourceName() then print(("Unauthorized event trigger attempt! Resource mismatch for stash update"))  return end
     Server.updateStashCoords(stashId, newCoords)
 end)
 
@@ -121,8 +113,7 @@ function Server.deleteAllStashes(source)
             Shared.Debug(("Player %s cleared all stashes."):format(Utility.Core:GetName(source)))
         end)
     else
-        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(
-            Utility.Core:GetName(source)))
+        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(  Utility.Core:GetName(source)))
     end
 end
 
@@ -130,18 +121,22 @@ RegisterCommand(Config.Command.Private.ClearStash, function(source, args, rawCom
     Server.deleteAllStashes(source)
 end)
 
-local hookId = exports.ox_inventory:registerHook('swapItems', function(payload)
+
+
+ox_inventory:registerHook('swapItems', function(payload)
     local itemName = payload.fromSlot.name
     for _, safeData in pairs(Config.ModelSafeData) do
         if safeData.ItemName == itemName then
-            print(("Blocked move: Item '%s' matches a configured safe item."):format(itemName))
-            return false
+            if payload.toType == 'stash' then
+                Shared.Debug(("Blocked move: Item '%s' matches a configured safe item and is being moved to a stash."):format(itemName))
+                return false
+            end
         end
     end
     return true
-end)
-
-
+end, {
+    print = true,
+})
 
 
 function Server.deleteStashById(stashId)
@@ -154,6 +149,11 @@ function Server.deleteStashById(stashId)
         print(("Stash ID %s not found."):format(stashId))
     end
 end
+
+RegisterNetEvent("LGF_Stash.DeleteStashbyID", function(stashId)
+    if not stashId then return end
+    Server.deleteStashById(stashId)
+end)
 
 exports('deleteAllStashes', Server.deleteAllStashes)
 exports("updateStashCoords", Server.updateStashCoords)

@@ -5,10 +5,13 @@ SafeObject.__index = SafeObject
 local ox_inventory = exports["ox_inventory"]
 local Config = require("Modules.shared.config")
 
-AddEventHandler("LGF_Utility:PlayerUnloaded", function(...)
+AddEventHandler("LGF_Utility:PlayerUnloaded", function(playerId)
     Shared.Debug("Player unloaded. Initializing stash cleanup.")
-    initializeStash(false)
+    if Initialized then
+        initializeStash(false)
+    end
 end)
+
 
 AddEventHandler("LGF_Utility:PlayerLoaded", function(...)
     if not Initialized then
@@ -17,6 +20,11 @@ AddEventHandler("LGF_Utility:PlayerLoaded", function(...)
         initializeStash(true)
     end
 end)
+
+CreateThread(function()
+    initializeStash(true)
+end)
+
 
 function SafeObject:new(model, coords, stashId)
     local self = setmetatable({}, SafeObject)
@@ -69,7 +77,7 @@ function SafeObject:addInteraction()
                     self:dataOpenSafe()
                 end,
                 canInteract = function(distance)
-                    return distance < 5.0
+                    return distance < 3.0
                 end
             },
             {
@@ -83,7 +91,21 @@ function SafeObject:addInteraction()
                     end
                 end,
                 canInteract = function(distance)
-                    return distance < 5.0
+                    return distance < 3.0
+                end
+            },
+            {
+                index = 3,
+                title = ("Delete Safe %s"):format(self.stashID),
+                description = "Click to delete the safe permanently.",
+                icon = "trash",
+                onClick = function(interaction)
+                    TriggerEvent('LGF_Safe:DeleteStash', self.stashID, true)
+                end,
+                canInteract = function(distance)
+                    local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, self.stashID)
+                    print(isOwnerStash)
+                    return distance < 2.0 and isOwnerStash
                 end
             }
         },
@@ -224,18 +246,16 @@ function initializeStash(state)
     end
 end
 
-CreateThread(function()
-    initializeStash(true)
-end)
-
-
-RegisterNetEvent('LGF_Safe:DeleteStash', function(stashId)
+RegisterNetEvent('LGF_Safe:DeleteStash', function(stashId, deleteQuery)
     for i, safe in ipairs(AllSafes) do
         if safe.stashID == stashId then
             exports.LGF_Interaction:removeInteractionEntity(safe.netID)
             local entity = NetworkGetEntityFromNetworkId(safe.netID)
             if DoesEntityExist(entity) then DeleteEntity(entity) end
             table.remove(AllSafes, i)
+            if deleteQuery then
+                TriggerServerEvent('LGF_Stash.DeleteStashbyID', stashId)
+            end
             Shared.Notification("LGF_Stash", ("Safe with ID %s has been deleted."):format(stashId), "top-left", "info")
             break
         end
