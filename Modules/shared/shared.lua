@@ -11,5 +11,6 @@ end
 function Shared.Debug(...)
     local args = { ... }
     local message = table.concat(args, " ")
+    if not Config.EnableDebug then return end 
     print(("[^5LGF-STASH^7] - %s"):format(message))
 end
