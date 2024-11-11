@@ -1,6 +1,6 @@
 local Config = {}
 
-Config.Debug = true
+Config.EnableDebug = true
 
 Config.ModelSafeData = {
     ["prop_ld_int_safe_01"] = {
@@ -14,6 +14,5 @@ Config.ModelSafeData = {
         ItemName = "medium_safe"
     },
 }
-
 
 return Config
