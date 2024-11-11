@@ -51,7 +51,7 @@ end
 
 function SafeObject:updateCoordsForStash()
     local currentCoords = vector4(self.position.x, self.position.y, self.position.z, self.position.w)
-    TriggerServerEvent('LGF_Safe:updateCoords', self.stashID, currentCoords)
+    TriggerServerEvent('LGF_Safe:updateCoords', self.stashID, currentCoords, GetCurrentResourceName())
 end
 
 function SafeObject:addInteraction()
@@ -99,6 +99,8 @@ end
 
 function SafeObject:dataOpenSafe()
     local CurrentStashID = lib.callback.await("LGF_Safe.requestStashId", false, self.position)
+    local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, CurrentStashID)
+    print(isOwnerStash)
     if not CurrentStashID then return end
     ox_inventory:openInventory('stash', CurrentStashID)
 end
@@ -132,8 +134,10 @@ RegisterNetEvent("LGF_Safe.receiveSyncedObject", function(coords, Props, stashId
     local FormattedCoords = vector4(decodeCoords.x, decodeCoords.y, decodeCoords.z, decodeCoords.w)
     print(FormattedCoords)
     local safe = SafeObject:new(Props, FormattedCoords, stashId)
-    if safe then table.insert(AllSafes, safe) end
+    if safe then table.insert(AllSafes, safe) Shared.Notification("LGF_Stash", ("Safe Placed Correctly whit stash ID %s"):format(stashId), "top-left", "info") end
 end)
+
+
 
 exports('setCurrentStash', function(data, slot)
     local reverseConfigLookup = { ["little_safe"] = "prop_ld_int_safe_01", ["medium_safe"] = "p_v_43_safe_s", }
@@ -188,7 +192,8 @@ function initializeStash(state)
                 local model = stash.model_safe or "prop_ld_int_safe_01"
                 local coords = json.decode(stash.coords) or vector4(0, 0, 0, 0)
                 local stashId = stash.stash_id
-                Shared.Debug(("Processing stash with ID: %s, Model: %s, Coordinates: %s"):format(stashId, model, json.encode(coords)))
+                Shared.Debug(("Processing stash with ID: %s, Model: %s, Coordinates: %s"):format(stashId, model,
+                    json.encode(coords)))
                 local safe = SafeObject:new(model, coords, stashId)
                 if safe then
                     table.insert(AllSafes, safe)
@@ -205,6 +210,11 @@ end
 
 CreateThread(function()
     initializeStash(true)
+end)
+
+RegisterNetEvent('LGF_Safe:ClearAllStashes', function()
+    print("pulire")
+    clearStashData()
 end)
 
 

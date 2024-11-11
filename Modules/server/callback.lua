@@ -1,22 +1,14 @@
 lib.callback.register("LGF_Safe.requestStashId", function(source, vec4)
-    local receivedCoords = { x = vec4.x, y = vec4.y, z = vec4.z, w = vec4.w }
-    local result = MySQL.query.await('SELECT * FROM lgf_stashData')
-
-    if result then
-        for i = 1, #result do
-            local row = result[i]
-            local dbCoords = json.decode(row.coords)
-
-            if Shared.matchCoords(receivedCoords, dbCoords) then
-                return row.stash_id
-            end
-        end
-    end
-
-    return nil
+    if not vec4 then return end
+    return Server.requestStashID(vec4)
 end)
 
-
 lib.callback.register("LGF_Safe.getAllStashData", function(source)
+    if not source then return end
     return Server.getAllStashData()
+end)
+
+lib.callback.register("LGF_Safe.isOwnerStash", function(source, stashid)
+    if not source or not stashid then return end
+    return Server.isOwnerStash(stashid, source)
 end)
