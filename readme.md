@@ -14,7 +14,8 @@ The LGF Safe System is designed to handle in-game safes with features like creat
 
 ```lua
 -- This export initializes all safes in the world and loads them from the server. (client exports)
-exports.LGF_Stash:initializeAllStash()
+---@param state boolean | true or false (if true load and create all stash and objects retrieved from the database if false unload and delete all props and interaction from the world)
+exports.LGF_Stash:initializeAllStash(state)
 
 -- This export clears and deletes all safes registered in the database. (server exports)
 ---@param source number | Required for checking the executor of the command to prevent exploit
