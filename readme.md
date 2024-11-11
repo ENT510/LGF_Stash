@@ -1,8 +1,8 @@
-# LGF Safe System - README
+# LGF Safe System
 
 ## Overview
 
-The LGF Safe System is designed to handle in-game safes with features like creating, interacting, moving, and managing stash data. Players can place and interact with safes, which store data and inventory. The system provides interaction menus and mini-games (configured as either `ox_lib` or `bl_ui`), allowing players to interact with safes and manage their contents.
+The LGF Safe System is designed to handle in-game safes with features like creating, interacting, moving, and managing stash data. Players can place and interact with safes, which store data and inventory. The system provides interaction menus and mini-games (configured as either `ox_lib` or `bl_ui`), allowing players to interact with safes and manage their contents but is all customizable to improve other Resource.
 
 ## Key Features
 
@@ -35,7 +35,7 @@ exports.LGF_Stash:isOwnerStash(stashId, target)
 
 -- This export requests the Stash ID for the current safe based on the provided coordinates. (server exports)
 ---@param coords vec4 | The coordinates (x, y, z, heading) of the safe entity
-exports.LGF_Stash:requestStashID(stashId, target)
+exports.LGF_Stash:requestStashID(coords)
 
 -- This export deletes a specific stash entity/interaction Dui by its ID. (server exports)
 ---@param stashId string | The stash ID to delete
