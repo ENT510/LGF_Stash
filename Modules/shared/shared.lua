@@ -1,6 +1,12 @@
+if not lib.checkDependency('LGF_Utility', '1.0.7') or not GetResourceState("LGF_Utility"):find("start") then
+    error("Missing or inactive LGF_Utility resource. Please ensure min version 1.0.7 is installed and started.")
+    return
+end
+
+local Config = require("Modules.shared.config")
 Utility = exports['LGF_Utility']:UtilityData()
 Context = Utility:GetContext()
-local ProviderNotification = "lgf_hud" -- "lgf_hud" "utility" "ox_lib"
+local ProviderNotification = Config.ProviderNotification
 Shared = {}
 
 function Shared.matchCoords(coord1, coord2, tolerance)
@@ -11,8 +17,7 @@ function Shared.matchCoords(coord1, coord2, tolerance)
 end
 
 function Shared.Debug(...)
-    local args = { ... }
-    local message = table.concat(args, " ")
+    local message = table.concat({ ... }, " ")
     print(("[^5LGF-STASH^7] - %s"):format(message))
 end
 
@@ -22,8 +27,17 @@ function Shared.Notification(title, message, position, type, src)
     local duration = 5000
 
     if Context == "client" then
-        if ProviderNotification == "lgf_hud" then
-            return exports.LGF_Hud:SendNotification({
+        if ProviderNotification == "utility" then
+            exports.LGF_Utility:SendNotification({
+                id = math.random(100000, 333333),
+                title = title,
+                message = message,
+                icon = notificationType,
+                duration = duration,
+                position = notificationPosition,
+            })
+        elseif ProviderNotification == "lgf_hud" then
+            exports.LGF_Hud:SendNotification({
                 Type = notificationType,
                 Message = message,
                 Duration = duration,
@@ -32,7 +46,7 @@ function Shared.Notification(title, message, position, type, src)
                 Transition = 'slide-right'
             })
         elseif ProviderNotification == "ox_lib" then
-            return lib.notify({
+            lib.notify({
                 title = title,
                 description = message,
                 type = notificationType,
@@ -41,13 +55,20 @@ function Shared.Notification(title, message, position, type, src)
             })
         end
     elseif Context == "server" then
-        if not src then
-            warn("'src' (target player ID) is required for server notifications.")
-            return
-        end
 
-        if ProviderNotification == "lgf_hud" then
-            return TriggerClientEvent('LGF_HUD:Notify:SendNotification', src, {
+        if not src then warn("'src' (target player ID) is required for server notifications.")  return end
+
+        if ProviderNotification == "utility" then
+            TriggerClientEvent('LGF_Utility:SendNotification', src, {
+                id = math.random(100000, 333333),
+                title = title,
+                message = message,
+                icon = notificationType,
+                duration = duration,
+                position = notificationPosition,
+            })
+        elseif ProviderNotification == "lgf_hud" then
+            TriggerClientEvent('LGF_HUD:Notify:SendNotification', src, {
                 Type = notificationType,
                 Message = message,
                 Duration = duration,
@@ -56,7 +77,7 @@ function Shared.Notification(title, message, position, type, src)
                 Transition = 'slide-right'
             })
         elseif ProviderNotification == "ox_lib" then
-            return TriggerClientEvent('ox_lib:notify', src, {
+            TriggerClientEvent('ox_lib:notify', src, {
                 title = title,
                 description = message,
                 type = notificationType,
@@ -65,5 +86,4 @@ function Shared.Notification(title, message, position, type, src)
             })
         end
     end
-    warn("Invalid context or provider configuration in Shared.Notification.")
 end

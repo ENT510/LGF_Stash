@@ -9,8 +9,8 @@ version '1.0.1'
 
 shared_scripts {
     '@ox_lib/init.lua',
-    'Modules/shared/shared.lua',
     'Modules/shared/config.lua',
+    'Modules/shared/shared.lua',
 }
 
 client_scripts {

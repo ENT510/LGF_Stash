@@ -97,12 +97,28 @@ function SafeObject:addInteraction()
     })
 end
 
+
+
+
 function SafeObject:dataOpenSafe()
     local CurrentStashID = lib.callback.await("LGF_Safe.requestStashId", false, self.position)
-    local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, CurrentStashID)
-    print(isOwnerStash)
     if not CurrentStashID then return end
-    ox_inventory:openInventory('stash', CurrentStashID)
+    local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, CurrentStashID)
+    if not isOwnerStash then
+        if Config.MiniGameType == "ox_lib" then
+            local success = Config.MiniGameSteal?.ox_lib()
+            if success then
+                ox_inventory:openInventory('stash', CurrentStashID)
+            end
+        elseif Config.MiniGameType == "bl_ui" then
+            local success = Config.MiniGameSteal?.bl_ui()
+            if success then
+                ox_inventory:openInventory('stash', CurrentStashID)
+            end
+        end
+    else
+        ox_inventory:openInventory('stash', CurrentStashID)
+    end
 end
 
 function SafeObject:dataMoveSafe()
@@ -134,7 +150,10 @@ RegisterNetEvent("LGF_Safe.receiveSyncedObject", function(coords, Props, stashId
     local FormattedCoords = vector4(decodeCoords.x, decodeCoords.y, decodeCoords.z, decodeCoords.w)
     print(FormattedCoords)
     local safe = SafeObject:new(Props, FormattedCoords, stashId)
-    if safe then table.insert(AllSafes, safe) Shared.Notification("LGF_Stash", ("Safe Placed Correctly whit stash ID %s"):format(stashId), "top-left", "info") end
+    if safe then
+        table.insert(AllSafes, safe)
+        Shared.Notification("LGF_Stash", ("Safe Placed Correctly whit stash ID %s"):format(stashId), "top-left", "info")
+    end
 end)
 
 

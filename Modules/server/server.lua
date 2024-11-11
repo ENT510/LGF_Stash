@@ -122,7 +122,8 @@ function Server.deleteAllStashes(source)
             Shared.Debug(("Player %s cleared all stashes."):format(Utility.Core:GetName(source)))
         end)
     else
-        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format( Utility.Core:GetName(source)))
+        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(
+        Utility.Core:GetName(source)))
     end
 end
 
