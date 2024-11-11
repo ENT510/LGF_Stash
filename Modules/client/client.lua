@@ -67,6 +67,8 @@ function SafeObject:addInteraction()
         netID = self.netID,
         closest = self.closest,
         distance = self.distance,
+        offsetCoords = vec3(0.0, 0.0, 1.0),
+        debug = Config.EnableDebug,
         dataBind = {
             {
                 index = 1,
@@ -77,7 +79,7 @@ function SafeObject:addInteraction()
                     self:dataOpenSafe()
                 end,
                 canInteract = function(distance)
-                    return distance < 3.0
+                    return distance < 3.0 and not Config.DeathCheck(Utility.Player:Ped())
                 end
             },
             {
@@ -91,7 +93,7 @@ function SafeObject:addInteraction()
                     end
                 end,
                 canInteract = function(distance)
-                    return distance < 3.0
+                    return distance < 3.0 and not Config.DeathCheck(Utility.Player:Ped())
                 end
             },
             {
@@ -103,19 +105,12 @@ function SafeObject:addInteraction()
                     TriggerEvent('LGF_Safe:DeleteStash', self.stashID, true)
                 end,
                 canInteract = function(distance)
+                    print(Config.DeathCheck(Utility.Player:Ped()))
                     local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, self.stashID)
-                    print(isOwnerStash)
-                    return distance < 2.0 and isOwnerStash
+                    return distance < 2.0 and isOwnerStash and not Config.DeathCheck(Utility.Player:Ped())
                 end
             }
         },
-        onEnter = function(self)
-            print(self.id)
-        end,
-        onExit = function(self)
-            print(self.id)
-        end,
-
     })
 end
 
@@ -182,12 +177,12 @@ exports('setCurrentStash', function(data, slot)
     local propName = reverseConfigLookup[data.name]
     if propName then
         local safeData = Config.ModelSafeData[propName]
-
+        print(json.encode(data, { indent = true }))
         if safeData then
             local coords, heading = Utils.PlaceObject(propName, 10.0)
             local formattedCoords = vec4(coords.x, coords.y, coords.z, heading)
             if coords then
-                TriggerServerEvent('LGF_Safe:SaveData', propName, formattedCoords)
+                TriggerServerEvent('LGF_Safe:SaveData', propName, formattedCoords, data.name)
             end
         end
     end
@@ -215,6 +210,9 @@ AddEventHandler('onResourceStop', function(resourceName)
         clearStashData()
     end
 end)
+
+
+RegisterNetEvent('LGF_Safe:ClearAllStashes', clearStashData)
 
 function initializeStash(state)
     if Initialized and state == true then

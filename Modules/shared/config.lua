@@ -47,6 +47,10 @@ Config.MiniGameSteal = {
         return exports.bl_ui:LightsOut(3, { level = 2, duration = 5000 })
     end,
 }
+-- Check if player is death to prevent open o manage the safe
+Config.DeathCheck = function(ped)
+    return GetResourceState("ars_ambulancejob"):find("start") and LocalPlayer.state.dead or IsPedFatallyInjured(ped)
+end
 
 
 return Config

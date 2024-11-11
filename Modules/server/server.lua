@@ -2,7 +2,7 @@ local Config = require("Modules.shared.config")
 local ox_inventory = exports["ox_inventory"]
 Server = {}
 
-RegisterNetEvent('LGF_Safe:SaveData', function(model, vec4)
+RegisterNetEvent('LGF_Safe:SaveData', function(model, vec4, itemName)
     local SafeModel = model
     local Coords = json.encode({ x = vec4.x, y = vec4.y, z = vec4.z, w = vec4.w })
     local src = source
@@ -12,8 +12,7 @@ RegisterNetEvent('LGF_Safe:SaveData', function(model, vec4)
     local stashId = SvFunctions.generateUniqueStashId()
     local Label = ("Stash %s"):format(stashId)
     ox_inventory:RegisterStash(stashId, Label, Slot, Weight, nil)
-    MySQL.insert('INSERT INTO lgf_stashData (stash_id, placer, coords, stash_prop) VALUES (?, ?, ?, ?)',
-        { stashId, Placer, Coords, SafeModel })
+    MySQL.insert('INSERT INTO lgf_stashData (stash_id, placer, coords, stash_prop) VALUES (?, ?, ?, ?)', { stashId, Placer, Coords, SafeModel })
     TriggerClientEvent("LGF_Safe.receiveSyncedObject", -1, Coords, model, stashId)
     print(("Safe stash created with ID %s for player %s"):format(stashId, Placer))
 end)
@@ -92,16 +91,23 @@ end
 
 function Server.updateStashCoords(stashId, newCoords)
     local src = source
-    if not stashId or not newCoords then  print("Invalid input parameters!") return end
+    if not stashId or not newCoords then
+        print("Invalid input parameters!")
+        return
+    end
     local coordsJson = json.encode({ x = newCoords.x, y = newCoords.y, z = newCoords.z, w = newCoords.w })
     MySQL.update('UPDATE lgf_stashData SET coords = ? WHERE stash_id = ?', { coordsJson, stashId })
     Shared.Debug(("Coordinates update requested for stash_id %s"):format(stashId))
-    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left", "info", src)
+    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left",
+        "info", src)
 end
 
 RegisterNetEvent('LGF_Safe:updateCoords', function(stashId, newCoords, invoker)
     local resourceInvoker = invoker
-    if resourceInvoker ~= GetCurrentResourceName() then print(("Unauthorized event trigger attempt! Resource mismatch for stash update"))  return end
+    if resourceInvoker ~= GetCurrentResourceName() then
+        print(("Unauthorized event trigger attempt! Resource mismatch for stash update"))
+        return
+    end
     Server.updateStashCoords(stashId, newCoords)
 end)
 
@@ -113,7 +119,8 @@ function Server.deleteAllStashes(source)
             Shared.Debug(("Player %s cleared all stashes."):format(Utility.Core:GetName(source)))
         end)
     else
-        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(  Utility.Core:GetName(source)))
+        print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(
+        Utility.Core:GetName(source)))
     end
 end
 
@@ -128,7 +135,8 @@ ox_inventory:registerHook('swapItems', function(payload)
     for _, safeData in pairs(Config.ModelSafeData) do
         if safeData.ItemName == itemName then
             if payload.toType == 'stash' then
-                Shared.Debug(("Blocked move: Item '%s' matches a configured safe item and is being moved to a stash."):format(itemName))
+                Shared.Debug(("Blocked move: Item '%s' matches a configured safe item and is being moved to a stash.")
+                :format(itemName))
                 return false
             end
         end
