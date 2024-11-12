@@ -4,6 +4,11 @@
 
 The LGF Safe System is designed to handle in-game safes with features like creating, interacting, moving, and managing stash data. Players can place and interact with safes, which store data and inventory. The system provides interaction menus and mini-games (configured as either `ox_lib` or `bl_ui`), allowing players to interact with safes and manage their contents (full customizable).
 
+<p align="center">
+  <img src="https://i.ibb.co/zRBTvnL/image.png" alt="Stash Dui" width="45%">
+  <img src="https://i.ibb.co/djD0FF0/image.png" alt="Stash Gps" width="45%">
+</p>
+
 ## Key Features
 
 - **Safe Creation**: Players can create safes at specified coordinates using raycast with models that are loaded dynamically.
