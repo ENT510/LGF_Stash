@@ -1,10 +1,10 @@
 local Config = {}
 
 -- Notification System, Check shared.shared.lua to add other Custom Notification
-Config.ProviderNotification = "lgf_hud" -- "lgf_hud" "utility" "ox_lib"
+Config.ProviderNotification = "utility" -- "lgf_hud" "utility" "ox_lib"
 
 -- This setting controls whether debug information will be printed to the console.
-Config.EnableDebug = true
+Config.EnableDebug = false
 
 -- Item Name to set the Gps At the Stash
 Config.GpsItemName = "gps_stash"
@@ -35,9 +35,9 @@ Config.Command = {
         DeleteStash = "clear_allStash", -- Delete all Stash objects and data from the database
         ForceStash = "init_stash",      -- Force and create all Stash objects
         ClearStash = "deinit_stash",    -- Unload all Stash objects and Interaction
-
     },
-    Public = { -- Public commands that can be used by any player
+    Public = {                          -- Public commands that can be used by any player
+        OpenGps = "open_gps",           --Work only if Debug is Enabled
     },
 }
 
