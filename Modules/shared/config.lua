@@ -1,7 +1,7 @@
 local Config = {}
 
 -- Notification System, Check shared.shared.lua to add other Custom Notification
-Config.ProviderNotification = "utility" -- "lgf_hud" "utility" "ox_lib"
+Config.ProviderNotification = "ox_lib" -- "lgf_hud" "utility" "ox_lib"
 
 -- This setting controls whether debug information will be printed to the console.
 Config.EnableDebug = false

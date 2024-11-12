@@ -127,8 +127,7 @@ function Server.updateStashCoords(stashId, newCoords)
     local coordsJson = json.encode({ x = newCoords.x, y = newCoords.y, z = newCoords.z, w = newCoords.w })
     MySQL.update('UPDATE lgf_stashData SET coords = ? WHERE stash_id = ?', { coordsJson, stashId })
     Shared.Debug(("Coordinates update requested for stash_id %s"):format(stashId))
-    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left",
-        "info", src)
+    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left","info", src)
 end
 
 RegisterNetEvent('LGF_Safe:updateCoords', function(stashId, newCoords, invoker)

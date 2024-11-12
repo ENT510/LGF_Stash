@@ -113,7 +113,8 @@ function SafeObject:addInteraction()
                 end,
                 canInteract = function(distance)
                     local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, self.stashID)
-                    return distance < 2.0 and isOwnerStash and not Config.DeathCheck(Utility.Player:Ped()) and not LocalPlayer.state.invOpen
+                    return distance < 2.0 and isOwnerStash and not Config.DeathCheck(Utility.Player:Ped()) and
+                        not LocalPlayer.state.invOpen
                 end
             },
             {
@@ -122,13 +123,13 @@ function SafeObject:addInteraction()
                 description = "Click to see you safes in the GPS.",
                 icon = "earth-americas",
                 onClick = function(interaction)
-
                     local data = lib.callback.await("LGF_Safe.getStashDataOwner", 100)
                     self:GpsData(data)
                 end,
                 canInteract = function(distance)
                     local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, self.stashID)
-                    return distance < 2.0 and isOwnerStash and not Config.DeathCheck(Utility.Player:Ped()) and not LocalPlayer.state.invOpen
+                    return distance < 2.0 and isOwnerStash and not Config.DeathCheck(Utility.Player:Ped()) and
+                        not LocalPlayer.state.invOpen
                 end
             },
         },
@@ -158,12 +159,15 @@ end
 
 function SafeObject:dataMoveSafe()
     Utils.StartBinderControl()
+
+    local Prop = Utils.StartPlayerAnim(Anim, Dict, PropsTablet)
     SetTimeout(1000, function()
         local newCoords, newHeading = Utils.PlaceObject(self.model, 10.0)
         if newCoords then
             self.position = vector4(newCoords.x, newCoords.y, newCoords.z, newHeading)
             local newObject = self:initializeEntity()
             if newObject then
+                
                 if self.netID then
                     exports.LGF_Interaction:removeInteractionEntity(self.netID)
                     local entity = NetworkGetEntityFromNetworkId(self.netID)
@@ -174,6 +178,8 @@ function SafeObject:dataMoveSafe()
                 self.netID = NetworkGetNetworkIdFromEntity(newObject)
                 self:addInteraction()
                 self:updateCoordsForStash()
+
+                Utils.ClearPed(Prop)
 
                 if exports.LGF_Utility:getStateInteraction() then
                     exports.LGF_Utility:closeInteraction()
@@ -348,7 +354,9 @@ function SafeObject:GpsData(data)
                         onFinish = function()
                             TriggerServerEvent("LGF_Stash.setGpsToStash", Config.GpsItemName, self.stashID)
                             Utils.ClearPed(Prop)
-                            Shared.Notification("LGF_Stash",("You have correctly place the gps for the stash with id %s."):format(self.stashID),"top-left", "success")
+                            Shared.Notification("LGF_Stash",
+                                ("You have correctly place the gps for the stash with id %s."):format(self.stashID),
+                                "top-left", "success")
                         end,
                     })
                 else
