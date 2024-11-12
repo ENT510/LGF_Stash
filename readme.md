@@ -1,4 +1,4 @@
-# LGF Safe System 
+# LGF Safe System
 
 ## Overview
 
@@ -27,6 +27,7 @@ exports.LGF_Stash:deleteAllStashes(source)
 exports.LGF_Stash:updateStashCoords(stashId, newCoords)
 
 -- This export retrieves all stash data from the database. (server exports)
+---@return StashData | A table containing all stash data from the database
 exports.LGF_Stash:getAllStashData()
 
 -- This export checks if the player is the owner of a specific stash. (server exports)
@@ -41,4 +42,12 @@ exports.LGF_Stash:requestStashID(coords)
 -- This export deletes a specific stash entity/interaction Dui by its ID. (server exports)
 ---@param stashId string | The stash ID to delete
 exports.LGF_Stash:deleteStashById(stashId)
+
+-- This export return all stashes data for the current player registered in database. (server exports)
+---@param target number | The Target of the player
+exports.LGF_Stash:getStashDataOwner(target)
+
+-- This export return if the current stash based on stashId have a gps installed. (server exports)
+---@param stashId string | The stash ID to Chek
+exports.LGF_Stash:isStashWithGps(stashId)
 ```
