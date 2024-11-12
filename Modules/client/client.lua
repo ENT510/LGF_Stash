@@ -4,7 +4,6 @@ local SafeObject = {}
 SafeObject.__index = SafeObject
 local ox_inventory = exports["ox_inventory"]
 local Config = require("Modules.shared.config")
-
 local Anim = "base"
 local Dict = "amb@world_human_tourist_map@male@base"
 local PropsTablet = "prop_cs_tablet"
@@ -17,7 +16,6 @@ AddEventHandler("LGF_Utility:PlayerUnloaded", function(...)
     end
 end)
 
-
 AddEventHandler("LGF_Utility:PlayerLoaded", function(...)
     if not Initialized then
         Shared.Debug("Player loaded. Stash initialization will start after a short delay.")
@@ -25,8 +23,6 @@ AddEventHandler("LGF_Utility:PlayerLoaded", function(...)
         initializeStash(true)
     end
 end)
-
-
 
 function SafeObject:new(model, coords, stashId)
     local self = setmetatable({}, SafeObject)
@@ -176,7 +172,6 @@ function SafeObject:dataMoveSafe()
                     self.netID = nil
                 end
 
-
                 self.netID = NetworkGetNetworkIdFromEntity(newObject)
                 self:addInteraction()
                 self:updateCoordsForStash()
@@ -202,7 +197,6 @@ RegisterNetEvent("LGF_Safe.receiveSyncedObject", function(coords, Props, stashId
 end)
 
 
-
 exports('setCurrentStash', function(data, slot)
     local reverseConfigLookup = { ["little_safe"] = "prop_ld_int_safe_01", ["medium_safe"] = "p_v_43_safe_s", }
     local propName = reverseConfigLookup[data.name]
@@ -221,7 +215,6 @@ exports('setCurrentStash', function(data, slot)
 end)
 
 
-
 local function clearStashData()
     for _, safe in ipairs(AllSafes) do
         if safe.netID then
@@ -233,7 +226,6 @@ local function clearStashData()
             end
         end
     end
-
     AllSafes = {}
     Initialized = false
 end
@@ -255,7 +247,6 @@ function initializeStash(state)
         Shared.Debug("Stash initialization attempted, but it has already been initialized. No further action required.")
         return
     end
-
 
     if not Initialized and state == false then
         Shared.Debug("Stash initialization attempted, but it has already not initialized. No further action required.")
@@ -302,11 +293,9 @@ RegisterNetEvent('LGF_Safe:DeleteStash', function(stashId, deleteQuery)
     end
 end)
 
-
 RegisterNetEvent("LGF_Safe.setupInitializedStash", function(state)
     initializeStash(state)
 end)
-
 
 function SafeObject:GpsData(data)
     local StashDatas = {}
@@ -360,11 +349,14 @@ function SafeObject:GpsData(data)
                         onFinish = function()
                             TriggerServerEvent("LGF_Stash.setGpsToStash", Config.GpsItemName, self.stashID)
                             Utils.ClearPed(Prop)
-                            Shared.Notification("LGF_Stash", ("You have correctly place the gps for the stash with id %s."):format(self.stashID), "top-left","success")
+                            Shared.Notification("LGF_Stash",
+                                ("You have correctly place the gps for the stash with id %s."):format(self.stashID),
+                                "top-left", "success")
                         end,
                     })
                 else
-                    Shared.Notification("LGF_Stash", ("You don't have enough %s."):format(Config.GpsItemName), "top-left","error")
+                    Shared.Notification("LGF_Stash", ("You don't have enough %s."):format(Config.GpsItemName), "top-left",
+                        "error")
                 end
             end
         },
@@ -413,7 +405,6 @@ local function openTablet(data)
         local StashData = data[i]
         local stashId = StashData.stash_id
         local coords = StashData.coords
-
         if StashData.gps then
             StashDatas[#StashDatas + 1] = {
                 position = { coords.x, coords.y },
@@ -424,7 +415,8 @@ local function openTablet(data)
         end
     end
 
-    exports['LGF_Utility']:RegisterContextMenu(("stash_gps_view_%s"):format(GetCurrentResourceName()), "All Stash Locations", {
+    exports['LGF_Utility']:RegisterContextMenu(("stash_gps_view_%s"):format(GetCurrentResourceName()),
+        "All Stash Locations", {
             {
                 label = "View on Map",
                 description = "See all stashes' locations on the map.",
@@ -451,11 +443,10 @@ local function openGpsTablet()
 end
 
 
-
-
 exports("openGpsTablet", openGpsTablet)
 exports("initializeAllStash", initializeStash)
 
-RegisterCommand("te", function()
-    exports.LGF_Stash:openGpsTablet()
-end)
+
+if Config.EnableDebug then
+    RegisterCommand(Config.Command.Public.OpenGps, openGpsTablet)
+end
