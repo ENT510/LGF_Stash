@@ -11,10 +11,20 @@ RegisterNetEvent('LGF_Safe:SaveData', function(model, vec4, itemName)
     local Slot = Config.ModelSafeData[SafeModel].Slot
     local stashId = SvFunctions.generateUniqueStashId()
     local Label = ("Stash %s"):format(stashId)
+
     ox_inventory:RegisterStash(stashId, Label, Slot, Weight, nil)
-    MySQL.insert('INSERT INTO lgf_stashData (stash_id, placer, coords, stash_prop) VALUES (?, ?, ?, ?)', { stashId, Placer, Coords, SafeModel })
-    TriggerClientEvent("LGF_Safe.receiveSyncedObject", -1, Coords, model, stashId)
-    print(("Safe stash created with ID %s for player %s"):format(stashId, Placer))
+    MySQL.insert('INSERT INTO lgf_stashData (stash_id, placer, coords, stash_prop) VALUES (?, ?, ?, ?)',
+        { stashId, Placer, Coords, SafeModel })
+
+    local success, response = exports.ox_inventory:RemoveItem(src, itemName, 1)
+
+    if success then
+        TriggerClientEvent("LGF_Safe.receiveSyncedObject", -1, Coords, model, stashId)
+        print(("Safe stash created with ID %s for player %s. Item '%s' removed successfully."):format(stashId, Placer,
+            itemName))
+    else
+        print(("Failed to remove item '%s' for player %s: %s"):format(itemName, Placer, response))
+    end
 end)
 
 function Server.getAllStashData()
@@ -24,14 +34,12 @@ function Server.getAllStashData()
         for i = 1, #result do
             local row = result[i]
             local startTime = os.nanotime()
-
             StashData[#StashData + 1] = {
                 stash_id = row.stash_id,
                 placer = row.placer,
                 coords = row.coords,
                 model_safe = row.stash_prop
             }
-
             local endTime = os.nanotime()
             local timeTaken = (endTime - startTime)
             Shared.Debug(("Execution time for stashID %s: %.3f nanoseconds."):format(row.stash_id, timeTaken))
@@ -39,6 +47,27 @@ function Server.getAllStashData()
     end
 
     return StashData
+end
+
+function Server.getStashDataOwner(target)
+    local playerIdentifier = Utility.Core:GetIdentifier(target)
+    local result = MySQL.query.await('SELECT * FROM lgf_stashData WHERE placer = ?', { playerIdentifier })
+    local OwnerStashData = {}
+
+    if result then
+        for i = 1, #result do
+            local row = result[i]
+            OwnerStashData[#OwnerStashData + 1] = {
+                stash_id = row.stash_id,
+                placer = row.placer,
+                coords = json.decode(row.coords),
+                model_safe = row.stash_prop,
+                gps = row.gps
+            }
+        end
+    end
+
+    return OwnerStashData
 end
 
 function Server.requestStashID(vec4)
@@ -120,15 +149,9 @@ function Server.deleteAllStashes(source)
         end)
     else
         print(("Unauthorized access attempt: Player %s tried to execute 'clearStashes' without permission."):format(
-        Utility.Core:GetName(source)))
+            Utility.Core:GetName(source)))
     end
 end
-
-RegisterCommand(Config.Command.Private.ClearStash, function(source, args, rawCommand)
-    Server.deleteAllStashes(source)
-end)
-
-
 
 ox_inventory:registerHook('swapItems', function(payload)
     local itemName = payload.fromSlot.name
@@ -136,7 +159,7 @@ ox_inventory:registerHook('swapItems', function(payload)
         if safeData.ItemName == itemName then
             if payload.toType == 'stash' then
                 Shared.Debug(("Blocked move: Item '%s' matches a configured safe item and is being moved to a stash.")
-                :format(itemName))
+                    :format(itemName))
                 return false
             end
         end
@@ -163,9 +186,60 @@ RegisterNetEvent("LGF_Stash.DeleteStashbyID", function(stashId)
     Server.deleteStashById(stashId)
 end)
 
+function Server.isStashWithGps(stashId)
+    local result = MySQL.query.await('SELECT gps FROM lgf_stashData WHERE stash_id = ?', { stashId })
+    if result and result[1] then
+        if result[1].gps == true then
+            return true
+        else
+            return false
+        end
+    else
+        print(("Stash ID %s not found in the database."):format(stashId))
+        return nil
+    end
+end
+
+function Server.setupGps(stashId, state)
+    local hasGps = Server.isStashWithGps(stashId)
+    if state == true and hasGps then
+        print(("GPS is already enabled for stash ID %s. No changes made."):format(stashId))
+        return 
+    elseif state == false and not hasGps then
+        print(("GPS is already disabled for stash ID %s. No changes made."):format(stashId))
+        return 
+    end
+    
+    MySQL.update('UPDATE lgf_stashData SET gps = ? WHERE stash_id = ?', { state, stashId })
+    print(("GPS successfully %s for stash ID %s."):format(state and "enabled" or "disabled", stashId))
+end
+
+
+RegisterNetEvent("LGF_Stash.setGpsToStash", function(GpsItemName, stashID)
+    if not stashID then return end
+    local src = source
+    local success, response = ox_inventory:RemoveItem(src, GpsItemName, 1)
+    if success then
+        Server.setupGps(stashID, true)
+    else
+        print(("Failed to remove GPS item from player %s: %s"):format(src, response))
+    end
+end)
+
+RegisterNetEvent("LGF_Stash.removeGpsFromStash", function(stashID)
+    if not stashID then return end
+    Server.setupGps(stashID, false)
+end)
+
 exports('deleteAllStashes', Server.deleteAllStashes)
 exports("updateStashCoords", Server.updateStashCoords)
 exports("getAllStashData", Server.getAllStashData)
 exports("isOwnerStash", Server.isOwnerStash)
 exports("requestStashID", Server.requestStashID)
 exports("deleteStashById", Server.deleteStashById)
+exports("getStashDataOwner", Server.getStashDataOwner)
+exports("isStashWithGps", Server.isStashWithGps)
+exports("setupGps", Server.setupGps)
+
+
+

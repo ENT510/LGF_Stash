@@ -12,10 +12,15 @@ The LGF Safe System is designed to handle in-game safes with features like creat
 - **Mini-Games**: When opening safes, if the player is not the owner of the safe , may be required to complete mini-games to access the contents.
 - **Notification System**: The system sends notifications to players when safes are placed, interacted with, or modified.
 
+openGpsTablet
+
 ```lua
 -- This export initializes all safes in the world and loads them from the server. (client exports)
 ---@param state boolean | true or false (if true load and create all stash and objects retrieved from the database if false unload and delete all props and interaction from the world)
 exports.LGF_Stash:initializeAllStash(state)
+
+-- This export open the Context Utility whit personal Stash with Gps. (client exports)
+exports.LGF_Stash:openGpsTablet()
 
 -- This export clears and deletes all safes registered in the database. (server exports)
 ---@param source number | Required for checking the executor of the command to prevent exploit
@@ -48,6 +53,79 @@ exports.LGF_Stash:deleteStashById(stashId)
 exports.LGF_Stash:getStashDataOwner(target)
 
 -- This export return if the current stash based on stashId have a gps installed. (server exports)
----@param stashId string | The stash ID to Chek
+---@param stashId string | The stash ID to Check
 exports.LGF_Stash:isStashWithGps(stashId)
+
+-- This export set a Gps at a Specific StashID. (server exports)
+---@param stashId string | The stash ID to Check
+---@param state boolean | if true set the Gps to the current Stash, if False remove The Gps from the Stash
+exports.LGF_Stash:setupGps(stashId,state)
+```
+
+### Stash Item Name
+
+```lua
+return {
+    ['little_safe'] = {
+        label = 'Little Safe',
+        weight = 0,
+        stack = true,
+        close = true,
+        consume = 0,
+        description = "A small safe ideal for storing papers or small items.",
+        client = {
+            export = 'LGF_Stash.setCurrentStash'
+        },
+    },
+
+    ['medium_safe'] = {
+        label = 'Medium Safe',
+        weight = 0,
+        stack = true,
+        close = true,
+        consume = 0,
+        description = "A medium-sized safe for storing documents and valuables.",
+        client = {
+            export = 'LGF_Stash.setCurrentStash'
+        },
+    },
+
+    ['big_safe'] = {
+        label = 'Big Safe',
+        weight = 10000,
+        stack = false,
+        close = true,
+        consume = 0,
+        description = "A large safe used for storing large quantities of valuables and important items.",
+        client = {
+            export = 'LGF_Stash.setCurrentStash'
+        },
+    },
+}
+```
+### Stash Gps Item Name
+
+```lua
+return {
+    ['gps_tablet-stash'] = {
+        label = 'GPS Tablet for Stash',
+        weight = 1,
+        stack = false,
+        close = true,
+        consume = 0,
+        description = "A GPS-enabled tablet, specifically configured for viewing the locations of stashes. Useful for tracking stash locations.",
+        client = {
+            export = 'LGF_Stash.openGpsTablet'
+        },
+    },
+
+    ['gps_stash'] = {
+        label = 'Stash GPS Module',
+        weight = 0.5,
+        stack = true,
+        close = false,
+        consume = 0,
+        description = "A compact GPS module designed for tracking a specific stash. Install it in a stash to monitor its location remotely.",
+    },
+}
 ```

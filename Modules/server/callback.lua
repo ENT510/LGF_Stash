@@ -12,3 +12,13 @@ lib.callback.register("LGF_Safe.isOwnerStash", function(source, stashid)
     if not source or not stashid then return end
     return Server.isOwnerStash(stashid, source)
 end)
+
+lib.callback.register("LGF_Safe.getStashDataOwner", function(source)
+    if not source then return end
+    return Server.getStashDataOwner(source)
+end)
+
+lib.callback.register("LGF_Safe.isStashWithGps", function(source, stashId)
+    if not stashId then return end
+    return Server.isStashWithGps(stashId)
+end)

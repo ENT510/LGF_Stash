@@ -1,9 +1,13 @@
 local Config = {}
 
+-- Notification System, Check shared.shared.lua to add other Custom Notification
 Config.ProviderNotification = "lgf_hud" -- "lgf_hud" "utility" "ox_lib"
 
 -- This setting controls whether debug information will be printed to the console.
 Config.EnableDebug = true
+
+-- Item Name to set the Gps At the Stash
+Config.GpsItemName = "gps_stash"
 
 -- This table defines which player groups are allowed to execute specific commands.
 -- 'admin' group can execute certain commands, while 'player' cannot.
@@ -27,15 +31,18 @@ Config.ModelSafeData = {
 -- This table defines the commands that players can use to interact with the stash.
 -- Private commands can only be used by players with a specific group defined in Config.AllowedGroup.
 Config.Command = {
-    Private = { -- Commands restricted to specific player groups
-        ClearStash = "clear_allStash",
+    Private = {                         -- Commands restricted to specific player groups
+        DeleteStash = "clear_allStash", -- Delete all Stash objects and data from the database
+        ForceStash = "init_stash",      -- Force and create all Stash objects
+        ClearStash = "deinit_stash",    -- Unload all Stash objects and Interaction
+
     },
     Public = { -- Public commands that can be used by any player
     },
 }
 
 -- Mini-game type setting determines which mini-game is played when interacting with the safe.
--- Currently supports 'bl_ui' for LightsOut and 'ox_lib' for the ox_lib mini-game.
+-- Currently supports 'bl_ui' and 'ox_lib' .
 Config.MiniGameType = "bl_ui" -- Change this to 'ox_lib' if you want to use the ox_lib mini-game
 
 -- Specific Category based on Config.MiniGameType

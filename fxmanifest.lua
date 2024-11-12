@@ -22,5 +22,6 @@ server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'Modules/server/functions.lua',
     'Modules/server/server.lua',
-    'Modules/server/callback.lua'
+    'Modules/server/callback.lua',
+    'Modules/server/commands.lua',
 }
