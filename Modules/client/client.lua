@@ -10,7 +10,7 @@ local Dict = "amb@world_human_tourist_map@male@base"
 local PropsTablet = "prop_cs_tablet"
 
 
-AddEventHandler("LGF_Utility:PlayerUnloaded", function(playerId)
+AddEventHandler("LGF_Utility:PlayerUnloaded", function(...)
     Shared.Debug("Player unloaded. Initializing stash cleanup.")
     if Initialized then
         initializeStash(false)
