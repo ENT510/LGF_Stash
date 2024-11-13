@@ -11,3 +11,13 @@ function SvFunctions.generateUniqueStashId()
     return stashId
 end
 
+
+
+function SvFunctions.getItemCash(targetID)
+
+    return moneyCount
+end
+
+function SvFunctions.removePlayerItem(targetID, price)
+    
+end

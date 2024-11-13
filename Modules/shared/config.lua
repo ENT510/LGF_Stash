@@ -6,8 +6,17 @@ Config.ProviderNotification = "ox_lib" -- "lgf_hud" "utility" "ox_lib"
 -- This setting controls whether debug information will be printed to the console.
 Config.EnableDebug = false
 
--- Item Name to set the Gps At the Stash
+-- Name of the GPS item used to set the GPS on a stash
 Config.GpsItemName = "gps_stash"
+
+-- Name of the item used to set the try to steal a safe
+Config.HackTool = "safe_cracker"
+
+-- Progress bar configuration (choose between "ox_lib" or "utility")
+Config.ProgressBar = "utility"
+
+-- Progress Duration when set or remove a gps from the stash
+Config.ProgressTime = 20
 
 -- This table defines which player groups are allowed to execute specific commands.
 -- 'admin' group can execute certain commands, while 'player' cannot.
@@ -43,7 +52,7 @@ Config.Command = {
 
 -- Mini-game type setting determines which mini-game is played when interacting with the safe.
 -- Currently supports 'bl_ui' and 'ox_lib' .
-Config.MiniGameType = "bl_ui" -- Change this to 'ox_lib' if you want to use the ox_lib mini-game
+Config.MiniGameType = "ox_lib" -- Change this to 'ox_lib' if you want to use the ox_lib mini-game
 
 -- Specific Category based on Config.MiniGameType
 Config.MiniGameSteal = {
@@ -58,6 +67,24 @@ Config.MiniGameSteal = {
 Config.DeathCheck = function(ped)
     return GetResourceState("ars_ambulancejob"):find("start") and LocalPlayer.state.dead or IsPedFatallyInjured(ped)
 end
+
+Config.ShopNPCs = {
+    {
+        PedID = "shop_1",
+        Position = vec4(256.2448, -1109.1915, 29.7132, 195.9954),
+        Model = "cs_lestercrest",
+        ShopName = "Stash Shop",
+        ShopItems = {
+            { Label = "Small Safe Storage",   ItemName = "little_safe",      Price = 500,  Description = "Small safe for valuables.",            Icon = "fa-lock" },
+            { Label = "Medium Safe Storage",  ItemName = "medium_safe",      Price = 1000, Description = "Medium-sized safe for valuables.",     Icon = "fa-lock" },
+            { Label = "GPS Tablet for Stash", ItemName = "gps_tablet-stash", Price = 300,  Description = "Tablet for tracking stash locations.", Icon = "fa-tablet" },
+            { Label = "Stash GPS Module",     ItemName = "gps_stash",        Price = 100,  Description = "GPS module for stash tracking.",       Icon = "fa-map-marker-alt" },
+            { Label = "Safe Cracker Tool",    ItemName = "safe_cracker",     Price = 750,  Description = "Tool used for cracking safes.",        Icon = "fa-wrench" }
+
+        }
+    },
+}
+
 
 
 return Config

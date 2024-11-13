@@ -15,7 +15,8 @@ shared_scripts {
 
 client_scripts {
     'Modules/client/utils.lua',
-    'Modules/client/client.lua'
+    'Modules/client/client.lua',
+    'Modules/client/shop.lua'
 }
 
 server_scripts {

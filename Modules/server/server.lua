@@ -27,7 +27,7 @@ RegisterNetEvent('LGF_Safe:SaveData', function(model, vec4, itemName)
     end
 end)
 
-function Server.getAllStashData()
+function Server.getAllStashData(print)
     local result = MySQL.query.await('SELECT * FROM lgf_stashData')
     local StashData = {}
     if result then
@@ -40,9 +40,11 @@ function Server.getAllStashData()
                 coords = row.coords,
                 model_safe = row.stash_prop
             }
-            local endTime = os.nanotime()
-            local timeTaken = (endTime - startTime)
-            Shared.Debug(("Execution time for stashID %s: %.3f nanoseconds."):format(row.stash_id, timeTaken))
+            if print then
+                local endTime = os.nanotime()
+                local timeTaken = (endTime - startTime)
+                Shared.Debug(("Execution time for stashID %s: %.3f nanoseconds."):format(row.stash_id, timeTaken))
+            end
         end
     end
 
@@ -87,7 +89,7 @@ end
 
 AddEventHandler("onResourceStart", function(res)
     if GetCurrentResourceName() == res then
-        local allStashData = Server.getAllStashData()
+        local allStashData = Server.getAllStashData(true)
         if allStashData and #allStashData > 0 then
             for _, stash in ipairs(allStashData) do
                 local stashId = stash.stash_id
@@ -127,7 +129,8 @@ function Server.updateStashCoords(stashId, newCoords)
     local coordsJson = json.encode({ x = newCoords.x, y = newCoords.y, z = newCoords.z, w = newCoords.w })
     MySQL.update('UPDATE lgf_stashData SET coords = ? WHERE stash_id = ?', { coordsJson, stashId })
     Shared.Debug(("Coordinates update requested for stash_id %s"):format(stashId))
-    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left","info", src)
+    Shared.Notification("LGF_Stash", ("Coords Correctly Updated for safe whit stash ID %s"):format(stashId), "top-left",
+        "info", src)
 end
 
 RegisterNetEvent('LGF_Safe:updateCoords', function(stashId, newCoords, invoker)
@@ -202,17 +205,16 @@ end
 function Server.setupGps(stashId, state)
     local hasGps = Server.isStashWithGps(stashId)
     if state == true and hasGps then
-        print(("GPS is already enabled for stash ID %s. No changes made."):format(stashId))
-        return 
+        Shared.Debug(("GPS is already enabled for stash ID %s. No changes made."):format(stashId))
+        return
     elseif state == false and not hasGps then
-        print(("GPS is already disabled for stash ID %s. No changes made."):format(stashId))
-        return 
+        Shared.Debug(("GPS is already disabled for stash ID %s. No changes made."):format(stashId))
+        return
     end
-    
-    MySQL.update('UPDATE lgf_stashData SET gps = ? WHERE stash_id = ?', { state, stashId })
-    print(("GPS successfully %s for stash ID %s."):format(state and "enabled" or "disabled", stashId))
-end
 
+    MySQL.update('UPDATE lgf_stashData SET gps = ? WHERE stash_id = ?', { state, stashId })
+    Shared.Debug(("GPS successfully %s for stash ID %s."):format(state and "enabled" or "disabled", stashId))
+end
 
 RegisterNetEvent("LGF_Stash.setGpsToStash", function(GpsItemName, stashID)
     if not stashID then return end
@@ -230,6 +232,42 @@ RegisterNetEvent("LGF_Stash.removeGpsFromStash", function(stashID)
     Server.setupGps(stashID, false)
 end)
 
+
+
+RegisterNetEvent("LGF_Stash.buyItems", function(targetID, ItemName, price)
+    if not targetID or not ItemName or not price then return end
+
+    if source ~= targetID then
+        print(("Player %s tried to trigger 'buyItems' for target %s"):format(tostring(source), tostring(targetID)))
+        return
+    end
+
+    local itemData = exports.ox_inventory:Items(ItemName)
+    if not itemData then
+        Shared.Debug(("Item %s does not exist."):format(ItemName))
+        return
+    end
+
+    local PlayerMoney = ox_inventory:GetItemCount(targetID, "money")
+    
+
+    if PlayerMoney < price then
+        Shared.Debug(("Player %s does not have enough money to buy %s. Needed: %d, Available: %d"):format(tostring(targetID), ItemName, price, PlayerMoney))
+        Shared.Notification("LGF_Stash", ("You do not have enough money to buy %s. Needed: %d, Available: %d"):format(ItemName, price, PlayerMoney), "top-left", "error", targetID)
+        return
+    end
+
+
+    ox_inventory:RemoveItem(targetID, "money", price)
+    ox_inventory:AddItem(targetID, ItemName, 1)
+
+    Shared.Notification("LGF_Stash", ("You successfully bought %s for %d money."):format(ItemName, price), "top-left", "success", targetID)
+    Shared.Debug(("Player %s bought %s for %d money."):format(tostring(targetID), ItemName, price))
+end)
+
+
+
+
 exports('deleteAllStashes', Server.deleteAllStashes)
 exports("updateStashCoords", Server.updateStashCoords)
 exports("getAllStashData", Server.getAllStashData)
@@ -239,6 +277,3 @@ exports("deleteStashById", Server.deleteStashById)
 exports("getStashDataOwner", Server.getStashDataOwner)
 exports("isStashWithGps", Server.isStashWithGps)
 exports("setupGps", Server.setupGps)
-
-
-

@@ -17,7 +17,6 @@ The LGF Safe System is designed to handle in-game safes with features like creat
 - **GPS System**: Players can equip safes with GPS trackers, allowing owners to set or remove GPS tracking on safes to monitor their locations.
 - **Inventory Slots and Weight Limits**: Each safe has a unique number of inventory slots and maximum weight capacity, determined by the item's size, adding realistic storage limitations based on the safe's size.
 
-
 ## Dependencies
 
 - **[ox_lib](https://github.com/overextended/ox_lib)**: A library for essential Lua utilities and performance optimizations.
@@ -123,13 +122,14 @@ return {
     },
 }
 ```
+
 ### Stash Gps Item Name
 
 ```lua
 return {
     ['gps_tablet-stash'] = {
         label = 'GPS Tablet for Stash',
-        weight = 1,
+        weight = 50,
         stack = false,
         close = true,
         consume = 0,
@@ -141,11 +141,19 @@ return {
 
     ['gps_stash'] = {
         label = 'Stash GPS Module',
-        weight = 0.5,
+        weight = 50,
         stack = true,
         close = false,
         consume = 0,
         description = "A compact GPS module designed for tracking a specific stash. Install it in a stash to monitor its location remotely.",
+    },
+    ['safe_cracker'] = {
+        label = 'Safe Cracker Module',
+        weight = 50,
+        stack = true,
+        close = false,
+        consume = 0,
+        description = "A compact Tool designed for cracking safes",
     },
 }
 ```

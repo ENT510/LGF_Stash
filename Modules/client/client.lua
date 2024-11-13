@@ -5,7 +5,7 @@ SafeObject.__index = SafeObject
 local ox_inventory = exports["ox_inventory"]
 local Config = require("Modules.shared.config")
 local Anim = "base"
-local Dict = "amb@world_human_tourist_map@male@base"
+local Dict = 'amb@code_human_in_bus_passenger_idles@female@tablet@base'
 local PropsTablet = "prop_cs_tablet"
 
 
@@ -138,21 +138,33 @@ end
 
 function SafeObject:dataOpenSafe()
     local CurrentStashID = lib.callback.await("LGF_Safe.requestStashId", false, self.position)
+    local hasItem = exports.ox_inventory:GetItemCount(Config.HackTool)
     if not CurrentStashID then return end
     local isOwnerStash = lib.callback.await("LGF_Safe.isOwnerStash", false, CurrentStashID)
     if not isOwnerStash then
+        
+        if hasItem <= 0 then
+            Shared.Notification("LGF_Safe", "You need a Hack Tool to open this safe.", "top-left", "error", source)
+            return
+        end
+
         if Config.MiniGameType == "ox_lib" then
             local success = Config.MiniGameSteal?.ox_lib()
             if success then
                 ox_inventory:openInventory('stash', CurrentStashID)
+            else
+                Shared.Notification("LGF_Safe", "You failed to break into the safe.", "top-left", "error", source)
             end
         elseif Config.MiniGameType == "bl_ui" then
             local success = Config.MiniGameSteal?.bl_ui()
             if success then
                 ox_inventory:openInventory('stash', CurrentStashID)
+            else
+                Shared.Notification("LGF_Safe", "You failed to break into the safe.", "top-left", "error", source)
             end
         end
     else
+        -- Se è il proprietario, apri la cassaforte senza minigioco
         ox_inventory:openInventory('stash', CurrentStashID)
     end
 end
@@ -167,7 +179,6 @@ function SafeObject:dataMoveSafe()
             self.position = vector4(newCoords.x, newCoords.y, newCoords.z, newHeading)
             local newObject = self:initializeEntity()
             if newObject then
-                
                 if self.netID then
                     exports.LGF_Interaction:removeInteractionEntity(self.netID)
                     local entity = NetworkGetEntityFromNetworkId(self.netID)
@@ -342,23 +353,41 @@ function SafeObject:GpsData(data)
                 if countGPS > 0 then
                     exports['LGF_Utility']:ShowContextMenu(("stash_gps_%s"):format(GetCurrentResourceName()), false)
                     Wait(300)
-                    local Prop = Utils.StartPlayerAnim(Anim, Dict, PropsTablet)
-                    exports["LGF_Utility"]:CreateProgressBar({
-                        message = ("Placing GPS on stash %s"):format(self.stashID),
-                        colorProgress = "rgba(54, 156, 129, 0.381)",
-                        position = "bottom",
-                        duration = 5000,
-                        transition = "fade",
-                        disableBind = false,
-                        disableKeyBind = { 24, 32, 33, 34, 30, 31, 36, 21 },
-                        onFinish = function()
+                    if Config.ProgressBar == "utility" then
+                        local Prop = Utils.StartPlayerAnim(Anim, Dict, PropsTablet)
+                        exports["LGF_Utility"]:CreateProgressBar({
+                            message = ("Placing GPS on stash %s"):format(self.stashID),
+                            colorProgress = "rgba(54, 156, 129, 0.381)",
+                            position = "bottom",
+                            duration = Config.ProgressTime * 1000,
+                            transition = "fade",
+                            disableBind = false,
+                            disableKeyBind = { 24, 32, 33, 34, 30, 31, 36, 21 },
+                            onFinish = function()
+                                TriggerServerEvent("LGF_Stash.setGpsToStash", Config.GpsItemName, self.stashID)
+                                Utils.ClearPed(Prop)
+                                Shared.Notification("LGF_Stash",
+                                    ("You have correctly placed the GPS for the stash with id %s."):format(self.stashID),
+                                    "top-left", "success")
+                            end,
+                        })
+                    elseif Config.ProgressBar == "ox_lib" then
+                        local progress = lib.progressBar({
+                            duration = Config.ProgressTime * 1000,
+                            label = ("Placing GPS on stash %s"):format(self.stashID),
+                            useWhileDead = false,
+                            canCancel = false,
+                            disable = { car = true, move = true, combat = true },
+                            anim = { dict = Dict, clip = Anim },
+                            prop = { model = PropsTablet, pos = vec3(0.03, 0.002, -0.0), rot = vec3(10.0, 160.0, 0.0) },
+                        })
+                        if progress then
                             TriggerServerEvent("LGF_Stash.setGpsToStash", Config.GpsItemName, self.stashID)
-                            Utils.ClearPed(Prop)
                             Shared.Notification("LGF_Stash",
-                                ("You have correctly place the gps for the stash with id %s."):format(self.stashID),
+                                ("You have correctly placed the GPS for the stash with id %s."):format(self.stashID),
                                 "top-left", "success")
-                        end,
-                    })
+                        end
+                    end
                 else
                     Shared.Notification("LGF_Stash", ("You don't have enough %s."):format(Config.GpsItemName), "top-left",
                         "error")
@@ -374,20 +403,41 @@ function SafeObject:GpsData(data)
             onSelect = function()
                 exports['LGF_Utility']:ShowContextMenu(("stash_gps_%s"):format(GetCurrentResourceName()), false)
                 Wait(300)
-                local Prop = Utils.StartPlayerAnim(Anim, Dict, PropsTablet)
-                exports["LGF_Utility"]:CreateProgressBar({
-                    message = ("Removing GPS from stash %s"):format(self.stashID),
-                    colorProgress = "rgba(255, 0, 0, 0.381)",
-                    position = "bottom",
-                    duration = 5000,
-                    transition = "fade",
-                    disableBind = false,
-                    disableKeyBind = { 24, 32, 33, 34, 30, 31, 36, 21 },
-                    onFinish = function()
+                if Config.ProgressBar == "utility" then
+                    local Prop = Utils.StartPlayerAnim(Anim, Dict, PropsTablet)
+                    exports["LGF_Utility"]:CreateProgressBar({
+                        message = ("Removing GPS from stash %s"):format(self.stashID),
+                        colorProgress = "rgba(255, 0, 0, 0.381)",
+                        position = "bottom",
+                        duration = Config.ProgressTime * 1000,
+                        transition = "fade",
+                        disableBind = false,
+                        disableKeyBind = { 24, 32, 33, 34, 30, 31, 36, 21 },
+                        onFinish = function()
+                            TriggerServerEvent("LGF_Stash.removeGpsFromStash", self.stashID)
+                            Utils.ClearPed(Prop)
+                            Shared.Notification("LGF_Stash",
+                                ("You have correctly removed the GPS for the stash with id %s."):format(self.stashID),
+                                "top-left", "success")
+                        end,
+                    })
+                elseif Config.ProgressBar == "ox_lib" then
+                    local progress = lib.progressBar({
+                        duration = Config.ProgressTime * 1000,
+                        label = ("Removing GPS from stash %s"):format(self.stashID),
+                        useWhileDead = false,
+                        canCancel = false,
+                        disable = { car = true, move = true, combat = true },
+                        anim = { dict = Dict, clip = Anim },
+                        prop = { model = PropsTablet, pos = vec3(0.03, 0.002, -0.0), rot = vec3(10.0, 160.0, 0.0) },
+                    })
+                    if progress then
                         TriggerServerEvent("LGF_Stash.removeGpsFromStash", self.stashID)
-                        Utils.ClearPed(Prop)
-                    end,
-                })
+                        Shared.Notification("LGF_Stash",
+                            ("You have correctly removed the GPS for the stash with id %s."):format(self.stashID),
+                            "top-left", "success")
+                    end
+                end
             end
         },
         {
@@ -400,6 +450,7 @@ function SafeObject:GpsData(data)
             }
         }
     })
+
 
     exports['LGF_Utility']:ShowContextMenu(("stash_gps_%s"):format(GetCurrentResourceName()), true)
 end

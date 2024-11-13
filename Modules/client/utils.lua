@@ -59,15 +59,15 @@ end
 
 Utils.isInRaycasting = function() return Utils.activeRaycast end
 
-
-function Utils.StartBinderControl()
+Utils.StartBinderControl = function()
     exports.LGF_Utility:interactionButton({
         Visible = true,
         Controls = {
             Bind1 = { key = "Q", label = "Rotate Left", description = "Use this key to rotate the Safe to the left." },
             Bind2 = { key = "E", label = "Rotate Right", description = "Use this key to rotate the Safe to the right." },
-            Bind3 = { isMouse = true, label = "Place Vehicle", description = "Use left Click mouse to place the Safe." },
-            Bind4 = { key = "X", label = "Cancel Placement", description = "Press this key to cancel the Safe placement." }
+            Bind3 = { isMouse = true, label = "Place Safe", description = "Use left Click mouse to place the Safe." },
+            Bind4 = { key = "X", label = "Cancel Placement", description = "Press this key to cancel the Safe placement." },
+            Bind5 = { key = "G", label = "Force Ground", description = "Press to place the object on the ground properly." }
         },
         Schema = {
             Styles = {
@@ -81,8 +81,8 @@ end
 function Utils.StartPlayerAnim(anim, dict, prop)
     local dict = lib.requestAnimDict(dict)
     local model = lib.requestModel(prop)
-    local Ped = cache.ped
-    local PlayerCoords = GetEntityCoords(Ped)
+    local Ped = Utility.Player:Ped()
+    local PlayerCoords = Utility.Player:Coords()
     TaskPlayAnim(Ped, dict, anim, 2.0, 2.0, -1, 51, 0, false, false, false)
     local props = CreateObject(model, PlayerCoords.x, PlayerCoords.y, PlayerCoords.z + 0.2, true, true, true)
     AttachEntityToEntity(props, Ped, GetPedBoneIndex(Ped, 28422), 0.0, -0.03, 0.0, 20.0, -90.0, 0.0, true, true, false, true, 1, true)
@@ -90,7 +90,7 @@ function Utils.StartPlayerAnim(anim, dict, prop)
 end
 
 function Utils.ClearPed(Object)
-    if Object and IsEntityPlayingAnim(cache.ped, "amb@world_human_tourist_map@male@base", "base", 3) then
+    if Object and IsEntityPlayingAnim(cache.ped, 'amb@code_human_in_bus_passenger_idles@female@tablet@base', "base", 3) then
         DeleteEntity(Object)
         ClearPedTasks(cache.ped)
         Object = nil
