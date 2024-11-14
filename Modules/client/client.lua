@@ -164,7 +164,7 @@ function SafeObject:dataOpenSafe()
             end
         end
     else
-        -- Se è il proprietario, apri la cassaforte senza minigioco
+        -- Note: If im the owner of the safe open directly
         ox_inventory:openInventory('stash', CurrentStashID)
     end
 end
