@@ -1,4 +1,6 @@
 # LGF Safe System
+![GitHub Downloads](https://img.shields.io/github/downloads/ENT510/LGF_Stash/total?logo=github)
+![GitHub Release](https://img.shields.io/github/v/release/ENT510/LGF_Stash?logo=github)
 
 The LGF Safe System is designed to handle in-game safes with features like creating, interacting, moving, and managing stash data. Players can place and interact with safes, which store data and inventory. The system provides interaction menus and mini-games (configured as either `ox_lib` or `bl_ui`), allowing players to interact with safes and manage their contents (full customizable).
 
