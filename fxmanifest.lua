@@ -5,7 +5,7 @@ lua54 'yes'
 
 name 'LGF Stash'
 author 'ENT510'
-version '1.0.1'
+version '1.0.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
