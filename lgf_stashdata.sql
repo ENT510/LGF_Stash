@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS `lgf_stashdata` (
+CREATE TABLE IF NOT EXISTS `lgf_stashData` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `stash_id` varchar(50) NOT NULL,
   `placer` varchar(50) NOT NULL,
